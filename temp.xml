@@ -1,0 +1,36 @@
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <!-- Build an executable JAR -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.3.0</version>
+        <configuration>
+          <archive>
+            <index>true</index>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>com.crowvinyl.iotturntables.App</mainClass>
+              <!-- <classpathPrefix>lib/</classpathPrefix> -->
+              <!-- <mainClass>com.mypackage.MyClass</mainClass> -->
+            </manifest>
+            <!-- <manifestEntries>
+              <mode>development</mode> -->
+              <!-- <url>${project.url}</url>
+              <key>value</key> -->
+              <!-- <Main-Class>com.crowvinyl.iotturntables.App</Main-Class>
+            </manifestEntries> -->
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
