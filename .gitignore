@@ -1,4 +1,5 @@
 .vscode
+*.cer
 
 # Local .terraform directories
 **/.terraform/*
