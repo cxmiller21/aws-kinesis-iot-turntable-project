@@ -2,8 +2,8 @@ terraform {
   required_version = ">= 1.0"
   backend "s3" {
     bucket  = "cm-sdg-terraform-state-bucket"
-    key    = "aws/kinesis-stock"
-    region = "us-east-1"
+    key     = "aws/kinesis-stock"
+    region  = "us-east-1"
     profile = "demo"
   }
 
@@ -17,6 +17,6 @@ terraform {
 
 # Configure the AWS Provider
 provider "aws" {
-  region = "us-east-1"
-    profile = "demo"
+  region  = "us-east-1"
+  profile = "demo"
 }
