@@ -1,25 +1,5 @@
 """
 Generate Mock IoT Turntable data and send to Kinesis Data Stream
-
-Example Event Data:
-{
-  "turntableId": "1234567890",
-  "user_name": "John Doe",
-  "user_email": "example@gmail.com",
-  "user_address": "123 Main St",
-  "user_zip_code": "12345",
-  "user_wifi_name": "My WiFi",
-  "user_wifi_mbps": 400,
-  "user_ip_address": "1.1.1.1"
-  "user_local_latlng": "123.456, 123.456",
-  "artist": "The Beatles",
-  "album": "Abbey Road",
-  "song": "Come Together",
-  "play_timestamp": "2021-01-01T00:00:00.000Z",
-  "rpm": 33,
-  "volume": 50,
-  "speaker": "headphones",
-}
 """
 
 import argparse
@@ -72,16 +52,25 @@ def get_turntable_users(number_of_users: int) -> list[dict]:
     """Generate mock IoT Turntable users"""
     mock_users = []
     wifi_speeds = [100, 400, 1000, 1200, 2000]
+
+    # Note - user lat/long will NOT match user zip code/state
+    latitude, longitude = fake.location_on_land(coords_only=True)
+    # Example fake.address()
+    # 576 Holt Points North Brandonstad, DC 65617
+    # Returns - DC, 65617
+    state_code, zip_code = fake.address()[-8:].split(" ")
     for _ in range(number_of_users):
         mock_user = {
             "turntableId": fake.uuid4(),
             "user_name": fake.name(),
             "user_email": fake.ascii_free_email(),
-            "user_zip_code": fake.zipcode(),
+            "user_zip_code": zip_code,
             "user_wifi_name": fake.word(),
             "user_wifi_mbps": wifi_speeds[fake.random_int(min=0, max=4)],
             "user_ip_address": fake.ipv4(),
-            "user_local_latlng": fake.local_latlng(country_code="US"),
+            "user_latitude": latitude,
+            "user_longitude": longitude,
+            "user_iso_code": f"{fake.current_country_code()}-{state_code}",
         }
         mock_users.append(mock_user)
     return mock_users
@@ -103,7 +92,8 @@ def get_event_data(user: dict, record: dict) -> dict:
     # Convert datetime to epoch milliseconds for IoT Analytics
     # epoch_milliseconds = fake.date_time_this_month().timestamp() * 1000
     play_timestamp = fake.date_time_this_month().isoformat().replace("T", " ")
-    return {
+
+    turntable_data = {
         "turntableId": user["turntableId"],
         "artist": record["artist"],
         "album": record["album"],
@@ -111,29 +101,22 @@ def get_event_data(user: dict, record: dict) -> dict:
         "play_timestamp": play_timestamp,
         "rpm": random.choice(turntable_rpms),
         "volume": fake.random_int(min=0, max=100),
-        "speaker": random.choice(turntable_speakers),
-        "user_name": user["user_name"],
-        "user_email": user["user_email"],
-        "user_zip_code": user["user_zip_code"],
-        "user_wifi_name": user["user_wifi_name"],
-        "user_wifi_speed": user["user_wifi_mbps"],
-        "user_ip_address": user["user_ip_address"],
-        "user_local_latlng": f"{user['user_local_latlng'][0]} {user['user_local_latlng'][1]}",
+        "speaker": random.choice(turntable_speakers)
     }
 
+    # Merge user and turntable data
+    return {**user, **turntable_data}
 
-def put_kinesis_data_record(data: list[dict], partition_key: str) -> dict:
+
+def put_kinesis_data_record(data: dict, partition_key: str) -> dict:
     """Put IoT Turntable data to Kinesis Data Stream
 
     Each PutRecords request can support up to 500 records.
     https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kinesis/client/put_records.html
     """
-    # Add a comma to the end of the data
     results = kinesis.put_record(
         StreamName=STREAM_NAME, Data=json.dumps(data), PartitionKey=partition_key
     )
-    # return {"results": results, "data_count": len(data)}
-    # TODO: Add error handling for failed records HTTPStatusCode != 200
     return results
 
 
@@ -146,6 +129,8 @@ def main() -> None:
     log.info(f"Generating random user data every 5 seconds over {run_time} seconds")
 
     total_records_sent_to_kinesis = 0
+    error_count = 0
+
     end_time = time.time() + run_time
     while time.time() < end_time:
         sample_min = len(users) / 2
@@ -160,21 +145,17 @@ def main() -> None:
             data = get_event_data(user, random_record)
             event_data.append(data)
 
-        # log.info(event_data)
         partition_key = str(time.time())  # use timestamp as partition key
 
         # Send individual records to Kinesis Data Stream
         # More realistic for 1 user with 1 turntable
         log.info(f"Sending {len(event_data)} records to Kinesis Data Stream")
         for data in event_data:
+            # log.info(f"Event: {data}")
             response = put_kinesis_data_record(data, partition_key)
             if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
-                error_message = "Failed to send record to Kinesis Data Stream"
-                error_message += f"\nShardID: {response['ShardId']}"
-                error_message += f"\nSequenceNumber: {response['SequenceNumber']}"
-                error_message += f"\nError Code: {response['ResponseMetadata']['HTTPStatusCode']}"
-                error_message += f"\nRetry Attempts: {response['ResponseMetadata']['RetryAttempts']}"
-                log.error(error_message)
+                log.error(response)
+                error_count += 1
 
             total_records_sent_to_kinesis += 1
 
@@ -182,9 +163,11 @@ def main() -> None:
         time.sleep(sleep_interval)
 
     log.info(
-        f"Total records sent to Kinesis Data Stream: {total_records_sent_to_kinesis}"
+        "Successfully sent {total_records_sent_to_kinesis} IoT Turntable events to Kinesis!!"
     )
-    log.info("Successfully generated and sent mock IoT Turntable data to Kinesis!")
+
+    if error_count > 0:
+        log.error(f"Encountered {error_count} errors sending data to Kinesis")
 
 
 if __name__ == "__main__":

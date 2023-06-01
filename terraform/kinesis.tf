@@ -112,6 +112,7 @@ resource "aws_kinesis_firehose_delivery_stream" "iot_turntable_s3_stream" {
     aws_iam_role.iot_turntable_firehose,
     aws_s3_bucket.iot_turntable_data_lake,
     aws_cloudwatch_log_group.iot_turntable_firehose,
+    aws_glue_catalog_table.iot_turntable_catalog_table
   ]
 }
 

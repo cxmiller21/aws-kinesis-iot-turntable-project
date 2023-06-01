@@ -10,7 +10,7 @@ resource "aws_glue_crawler" "iot_turntable_crawler" {
   name          = "${local.project_prefix}-crawler"
   role          = "arn:aws:iam::${local.account_id}:role/service-role/AWSGlueServiceRole-tf-import-test"
 
-  table_prefix = replace("${local.project_prefix}-", "-", "_")
+  table_prefix = ""
 
   s3_target {
     path = "s3://${aws_s3_bucket.iot_turntable_data_lake.bucket}"
@@ -24,19 +24,10 @@ resource "aws_glue_crawler" "iot_turntable_crawler" {
 resource "aws_glue_catalog_database" "iot_turntable_catalog_database" {
   name       = "${local.project_prefix}-database"
   catalog_id = local.account_id
-
-  # target_database {
-  #   catalog_id = local.account_id
-  #   database_name = aws_athena_database.iot_turntable.name
-  # }
-
-  # depends_on = [
-  #   aws_athena_database.iot_turntable
-  # ]
 }
 
-# The Glue Crawler will also create a table in the Glue Data Catalog
-# This is for reference as well as MVP use for Terraform to spin up a usable application
+# The Glue Crawler will create a similar table to this one that we'll use to query
+# We need this table for Kinesis to reference and use the Schema to transform records
 resource "aws_glue_catalog_table" "iot_turntable_catalog_table" {
   name          = replace("${local.project_prefix}-non-crawler-2023", "-", "_")
   database_name = aws_glue_catalog_database.iot_turntable_catalog_database.name
@@ -44,6 +35,12 @@ resource "aws_glue_catalog_table" "iot_turntable_catalog_table" {
 
   table_type = "EXTERNAL_TABLE"
   retention  = 0
+
+  parameters = {
+    "compressionType" = "none"
+    "classification"  = "orc"
+    "typeOfData"      = "file"
+  }
 
   partition_index {
     index_name = "year_month_day_hour"
@@ -155,7 +152,17 @@ resource "aws_glue_catalog_table" "iot_turntable_catalog_table" {
       type       = "string"
     }
     columns {
-      name       = "user_local_latlng"
+      name       = "user_latitude"
+      parameters = {}
+      type       = "string"
+    }
+    columns {
+      name       = "user_longitude"
+      parameters = {}
+      type       = "string"
+    }
+    columns {
+      name       = "user_iso_code"
       parameters = {}
       type       = "string"
     }
