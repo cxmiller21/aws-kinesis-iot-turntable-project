@@ -23,7 +23,8 @@ log = logging.getLogger(__name__)
 log.info("Generating and sending mock IoT Turntable event data...")
 
 kinesis = boto3.client("kinesis")
-fake = Faker()
+fake = Faker("en_US")
+start_time = datetime.now()
 
 
 def get_arguments() -> tuple[int, int, int]:
@@ -31,8 +32,13 @@ def get_arguments() -> tuple[int, int, int]:
     parser = argparse.ArgumentParser(description="Generate Mock User Orders")
     parser.add_argument(
         "--user-count",
-        help="Number of IoT users to generate data for. Default is 1",
-        default="1",
+        help="Number of IoT users to generate data for. Default is 100",
+        default="100",
+    )
+    parser.add_argument(
+        "--event-count",
+        help="Number of events generate. Default is 10",
+        default="10",
     )
     parser.add_argument("--run-time", help="Number of seconds to run", default="60")
     parser.add_argument(
@@ -43,6 +49,7 @@ def get_arguments() -> tuple[int, int, int]:
     args = parser.parse_args()
     return (
         int(args.user_count),
+        int(args.event_count),
         int(args.run_time),
         int(args.sleep_interval),
     )
@@ -53,13 +60,11 @@ def get_turntable_users(number_of_users: int) -> list[dict]:
     mock_users = []
     wifi_speeds = [100, 400, 1000, 1200, 2000]
 
-    # Note - user lat/long will NOT match user zip code/state
-    latitude, longitude = fake.location_on_land(coords_only=True)
-    # Example fake.address()
-    # 576 Holt Points North Brandonstad, DC 65617
-    # Returns - DC, 65617
-    state_code, zip_code = fake.address()[-8:].split(" ")
     for _ in range(number_of_users):
+        # Note - user lat/long will NOT match user zip code/state
+        latitude, longitude = fake.location_on_land(coords_only=True)
+        state_code = fake.state_abbr(include_territories=False)
+        zip_code = fake.zipcode_in_state(state_abbr=state_code)
         mock_user = {
             "turntableId": fake.uuid4(),
             "user_name": fake.name(),
@@ -101,7 +106,7 @@ def get_event_data(user: dict, record: dict) -> dict:
         "play_timestamp": play_timestamp,
         "rpm": random.choice(turntable_rpms),
         "volume": fake.random_int(min=0, max=100),
-        "speaker": random.choice(turntable_speakers)
+        "speaker": random.choice(turntable_speakers),
     }
 
     # Merge user and turntable data
@@ -121,7 +126,7 @@ def put_kinesis_data_record(data: dict, partition_key: str) -> dict:
 
 
 def main() -> None:
-    user_count, run_time, sleep_interval = get_arguments()
+    user_count, event_count, run_time, sleep_interval = get_arguments()
     users = get_turntable_users(user_count)
     vinyl_records = get_mock_vinyl_data(VINYL_RECORD_FILE)
 
@@ -131,44 +136,35 @@ def main() -> None:
     total_records_sent_to_kinesis = 0
     error_count = 0
 
-    end_time = time.time() + run_time
-    while time.time() < end_time:
-        sample_min = len(users) / 2
-        sample_max = len(users)
-        sample_size = fake.random_int(min=sample_min, max=sample_max)
-        random_user_data = random.sample(users, k=sample_size)
-        log.info(f"Generating data for {len(random_user_data)} users")
+    log.info(f"Generating {event_count} random events for {len(users)} random users...")
 
-        event_data = []
-        for user in random_user_data:
-            random_record = random.choice(vinyl_records)
-            data = get_event_data(user, random_record)
-            event_data.append(data)
+    event_data = []
+    for _ in range(event_count):
+        random_user = random.choice(users)
+        random_record = random.choice(vinyl_records)
+        data = get_event_data(random_user, random_record)
+        event_data.append(data)
 
-        partition_key = str(time.time())  # use timestamp as partition key
+    partition_key = str(time.time())  # use timestamp as partition key
 
-        # Send individual records to Kinesis Data Stream
-        # More realistic for 1 user with 1 turntable
-        log.info(f"Sending {len(event_data)} records to Kinesis Data Stream")
-        for data in event_data:
-            # log.info(f"Event: {data}")
-            response = put_kinesis_data_record(data, partition_key)
-            if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
-                log.error(response)
-                error_count += 1
-
+    log.info(f"Sending {len(event_data)} records to Kinesis Data Stream")
+    for data in event_data:
+        # log.info(f"Event: {data}")
+        response = put_kinesis_data_record(data, partition_key)
+        if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
+            log.error(response)
+            error_count += 1
+        else:
             total_records_sent_to_kinesis += 1
 
-        log.info(f"Sleeping for 5 seconds...")
-        time.sleep(sleep_interval)
-
     log.info(
-        "Successfully sent {total_records_sent_to_kinesis} IoT Turntable events to Kinesis!!"
+        f"Successfully sent {total_records_sent_to_kinesis} IoT Turntable events to Kinesis!!"
     )
 
     if error_count > 0:
         log.error(f"Encountered {error_count} errors sending data to Kinesis")
 
+    log.info(f"Script execution time: {datetime.now() - start_time}")
 
 if __name__ == "__main__":
     main()
