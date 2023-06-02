@@ -117,7 +117,7 @@ resource "aws_kinesis_firehose_delivery_stream" "iot_turntable_s3_stream" {
   tags = merge(
     var.default_tags,
     {
-      "Name" = local.kinesis_firehose_name
+      "Name"        = local.kinesis_firehose_name
       "Environment" = terraform.workspace
     }
   )
@@ -296,7 +296,7 @@ resource "aws_iam_policy" "iot_turntable_firehose" {
   tags = merge(
     var.default_tags,
     {
-      "Name" = "${local.project_prefix}-firehose-policy"
+      "Name"        = "${local.project_prefix}-firehose-policy"
       "Environment" = terraform.workspace
     }
   )
@@ -314,7 +314,7 @@ resource "aws_iam_role" "iot_turntable_firehose" {
   tags = merge(
     var.default_tags,
     {
-      "Name" = "${local.project_prefix}-firehose-role"
+      "Name"        = "${local.project_prefix}-firehose-role"
       "Environment" = terraform.workspace
     }
   )

@@ -1,9 +1,10 @@
 data "aws_caller_identity" "current" {}
 
 locals {
-  account_id               = data.aws_caller_identity.current.account_id
-  project_prefix           = "${var.project_name}-${terraform.workspace}"
-  s3_data_lake_bucket_name = "${local.project_prefix}-data-lake"
+  account_id                    = data.aws_caller_identity.current.account_id
+  project_prefix                = "${var.project_name}-${terraform.workspace}"
+  s3_data_lake_bucket_name      = "${local.project_prefix}-data-lake"
+  s3_athena_results_bucket_name = "${local.project_prefix}-athena-query-results"
 }
 
 data "http" "myip" {
@@ -67,13 +68,13 @@ resource "aws_s3_bucket_versioning" "iot_turntable_data_lake" {
 # S3 Bucket for Athena Query Results
 #####################################################
 resource "aws_s3_bucket" "athena_query_results" {
-  bucket        = "${local.project_prefix}-athena-query-results"
+  bucket        = local.s3_athena_results_bucket_name
   force_destroy = false
 
   tags = merge(
     var.default_tags,
     {
-      Name        = "${local.project_prefix}-athena-query-results"
+      Name        = local.s3_athena_results_bucket_name
       Environment = terraform.workspace
     }
   )

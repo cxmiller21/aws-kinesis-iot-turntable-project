@@ -1,7 +1,7 @@
 locals {
   glue_database_name = "${local.project_prefix}-database"
-  glue_crawler_name = "${local.project_prefix}-crawler"
-  glue_table_name = replace("${local.project_prefix}-non-crawler-2023", "-", "_")
+  glue_crawler_name  = "${local.project_prefix}-crawler"
+  glue_table_name    = replace("${local.project_prefix}-non-crawler-2023", "-", "_")
 }
 
 #####################################################
@@ -11,7 +11,7 @@ resource "aws_glue_crawler" "iot_turntable_crawler" {
   database_name = aws_glue_catalog_database.iot_turntable_catalog_database.name
   name          = local.glue_crawler_name
   # TODO: create IAM role here
-  role          = "arn:aws:iam::${local.account_id}:role/service-role/AWSGlueServiceRole-tf-import-test"
+  role = "arn:aws:iam::${local.account_id}:role/service-role/AWSGlueServiceRole-tf-import-test"
 
   table_prefix = ""
 
@@ -26,7 +26,7 @@ resource "aws_glue_crawler" "iot_turntable_crawler" {
   tags = merge(
     var.default_tags,
     {
-      "Name" = local.glue_crawler_name
+      "Name"        = local.glue_crawler_name
       "Environment" = terraform.workspace
     }
   )
@@ -39,7 +39,7 @@ resource "aws_glue_catalog_database" "iot_turntable_catalog_database" {
   tags = merge(
     var.default_tags,
     {
-      "Name" = local.glue_database_name
+      "Name"        = local.glue_database_name
       "Environment" = terraform.workspace
     }
   )
@@ -100,6 +100,18 @@ resource "aws_glue_catalog_table" "iot_turntable_catalog_table" {
       serialization_library = "org.apache.hadoop.hive.ql.io.orc.OrcSerde"
     }
 
+    dynamic "columns" {
+      for_each = var.glue_table_columns
+      content {
+        name    = columns.value.name
+        comment = columns.value.comment
+        type    = columns.value.type
+      }
+    }
+
+    /*
+    # Temporarily keeping this here for reference of column order
+    # For some reason the dynamic option isn't creating in order
     columns {
       name       = "turntableid"
       parameters = {}
@@ -185,5 +197,6 @@ resource "aws_glue_catalog_table" "iot_turntable_catalog_table" {
       parameters = {}
       type       = "string"
     }
+    */
   }
 }

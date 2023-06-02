@@ -1,5 +1,6 @@
 .vscode
 *.cer
+*.zip
 
 # Local .terraform directories
 **/.terraform/*
