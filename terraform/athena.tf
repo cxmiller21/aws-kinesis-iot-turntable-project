@@ -1,25 +1,24 @@
+locals {
+  athena_data_catalog_name = "IoTTurntableDataCatalog"
+}
+
 #####################################################
 # Athena Resources for Querying and Analyzing IoT Turntable Data
 #####################################################
-# resource "aws_athena_data_catalog" "iot_turntable" {
-#   name        = "${local.project_prefix}-data-catalog}"
-#   description = "IoT Turntable Data Catalog"
-#   type        = "LAMBDA"
+resource "aws_athena_data_catalog" "example" {
+  name        = local.athena_data_catalog_name
+  description = "Athena Glue based Data Catalog"
+  type        = "GLUE"
 
-#   parameters = {
-#     "function" = "arn:aws:lambda:eu-central-1:123456789012:function:not-important-lambda-function"
-#   }
+  parameters = {
+    "catalog-id" = local.account_id
+  }
 
-#   tags = {
-#     Name = "example-athena-data-catalog"
-#   }
-# }
-
-# resource "aws_athena_database" "iot_turntable" {
-#   name   = replace("${local.project_prefix}-database", "-", "_")
-#   bucket = aws_s3_bucket.iot_turntable_data_lake.id
-
-#   depends_on = [
-#     aws_s3_bucket.iot_turntable_data_lake,
-#   ]
-# }
+  tags = merge(
+    var.default_tags,
+    {
+      Name        = local.athena_data_catalog_name
+      Environment = terraform.workspace
+    }
+  )
+}

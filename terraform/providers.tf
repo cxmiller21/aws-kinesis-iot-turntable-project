@@ -2,9 +2,9 @@ terraform {
   required_version = ">= 1.0"
   backend "s3" {
     bucket  = "cm-sdg-terraform-state-bucket"
+    # TODO: Change to "aws/kinesis-iot-turntable/terraform.tfstate"
     key     = "aws/kinesis-stock"
     region  = "us-east-1"
-    profile = "demo"
   }
 
   required_providers {
@@ -15,8 +15,6 @@ terraform {
   }
 }
 
-# Configure the AWS Provider
 provider "aws" {
   region  = "us-east-1"
-  profile = "demo"
 }
