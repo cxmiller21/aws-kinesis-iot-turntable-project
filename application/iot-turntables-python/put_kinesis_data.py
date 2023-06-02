@@ -41,17 +41,11 @@ def get_arguments() -> tuple[int, int, int]:
         default="10",
     )
     parser.add_argument("--run-time", help="Number of seconds to run", default="60")
-    parser.add_argument(
-        "--sleep-interval",
-        help="Number of seconds to wait after sending data to Kinesis",
-        default="5",
-    )
     args = parser.parse_args()
     return (
         int(args.user_count),
         int(args.event_count),
         int(args.run_time),
-        int(args.sleep_interval),
     )
 
 
@@ -126,7 +120,7 @@ def put_kinesis_data_record(data: dict, partition_key: str) -> dict:
 
 
 def main() -> None:
-    user_count, event_count, run_time, sleep_interval = get_arguments()
+    user_count, event_count, run_time = get_arguments()
     users = get_turntable_users(user_count)
     vinyl_records = get_mock_vinyl_data(VINYL_RECORD_FILE)
 

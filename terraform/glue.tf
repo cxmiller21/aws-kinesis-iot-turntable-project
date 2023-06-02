@@ -1,5 +1,7 @@
 locals {
-  glue_table_name = replace("${local.project_prefix}-catalog-table", "-", "_")
+  glue_database_name = "${local.project_prefix}-database"
+  glue_crawler_name = "${local.project_prefix}-crawler"
+  glue_table_name = replace("${local.project_prefix}-non-crawler-2023", "-", "_")
 }
 
 #####################################################
@@ -7,7 +9,8 @@ locals {
 #####################################################
 resource "aws_glue_crawler" "iot_turntable_crawler" {
   database_name = aws_glue_catalog_database.iot_turntable_catalog_database.name
-  name          = "${local.project_prefix}-crawler"
+  name          = local.glue_crawler_name
+  # TODO: create IAM role here
   role          = "arn:aws:iam::${local.account_id}:role/service-role/AWSGlueServiceRole-tf-import-test"
 
   table_prefix = ""
@@ -19,17 +22,33 @@ resource "aws_glue_crawler" "iot_turntable_crawler" {
       "errors/**",
     ]
   }
+
+  tags = merge(
+    var.default_tags,
+    {
+      "Name" = local.glue_crawler_name
+      "Environment" = terraform.workspace
+    }
+  )
 }
 
 resource "aws_glue_catalog_database" "iot_turntable_catalog_database" {
-  name       = "${local.project_prefix}-database"
+  name       = local.glue_database_name
   catalog_id = local.account_id
+
+  tags = merge(
+    var.default_tags,
+    {
+      "Name" = local.glue_database_name
+      "Environment" = terraform.workspace
+    }
+  )
 }
 
 # The Glue Crawler will create a similar table to this one that we'll use to query
 # We need this table for Kinesis to reference and use the Schema to transform records
 resource "aws_glue_catalog_table" "iot_turntable_catalog_table" {
-  name          = replace("${local.project_prefix}-non-crawler-2023", "-", "_")
+  name          = local.glue_table_name
   database_name = aws_glue_catalog_database.iot_turntable_catalog_database.name
   owner         = "owner"
 

@@ -24,7 +24,7 @@ resource "aws_kinesis_stream" "iot_turntable" {
   tags = merge(
     var.default_tags,
     {
-      Name        = "${local.kinesis_stream_name}"
+      Name        = local.kinesis_stream_name
       Environment = terraform.workspace
     }
   )
@@ -36,6 +36,13 @@ resource "aws_kinesis_stream" "iot_turntable" {
 resource "aws_cloudwatch_log_group" "iot_turntable_firehose" {
   name              = "/aws/kinesisfirehose/${local.kinesis_firehose_name}"
   retention_in_days = 7
+
+  tags = merge(
+    var.default_tags,
+    {
+      "Environment" = terraform.workspace
+    }
+  )
 }
 
 resource "aws_kinesis_firehose_delivery_stream" "iot_turntable_s3_stream" {
@@ -106,6 +113,14 @@ resource "aws_kinesis_firehose_delivery_stream" "iot_turntable_s3_stream" {
   #   enabled = false
   #   key_type = "AWS_OWNED_CMK"
   # }
+
+  tags = merge(
+    var.default_tags,
+    {
+      "Name" = local.kinesis_firehose_name
+      "Environment" = terraform.workspace
+    }
+  )
 
   depends_on = [
     aws_iam_role_policy_attachment.iot_turntable,
@@ -277,6 +292,14 @@ resource "aws_iam_policy" "iot_turntable_firehose" {
   path        = "/"
   description = "IAM policy for IoT Turntable Kinesis Firehose"
   policy      = data.aws_iam_policy_document.iot_turntable_firehose_permissions.json
+
+  tags = merge(
+    var.default_tags,
+    {
+      "Name" = "${local.project_prefix}-firehose-policy"
+      "Environment" = terraform.workspace
+    }
+  )
 }
 
 resource "aws_iam_role_policy_attachment" "iot_turntable" {
@@ -287,4 +310,12 @@ resource "aws_iam_role_policy_attachment" "iot_turntable" {
 resource "aws_iam_role" "iot_turntable_firehose" {
   name               = "${local.project_prefix}-firehose-role"
   assume_role_policy = data.aws_iam_policy_document.iot_turntable_firehose_assume_role.json
+
+  tags = merge(
+    var.default_tags,
+    {
+      "Name" = "${local.project_prefix}-firehose-role"
+      "Environment" = terraform.workspace
+    }
+  )
 }
