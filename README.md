@@ -1,4 +1,4 @@
-# AWS Kinesis Turntable IoT Streaming Application
+# AWS Kinesis IoT Turntable Project
 
 The Crow Turntable company is releasing an innovative new product that will track the vinyl records that are played on their Turntable. The IoT device might be **slightly invasive**, but it will provide valuable data to the company about their customers and their listening habits.
 
