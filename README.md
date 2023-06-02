@@ -49,7 +49,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![IoT Turntable Screen Shot][product-screenshot]]
+![IoT Turntable Screen Shot][product-screenshot]
 
 The Crow Manufacturing company is releasing an innovative new product that will track vinyl records that are played on their latest and greatest turntable. The IoT devices might be considered as *slightly invasive*, but they will provide valuable data to the company about their customers and their listening habits.
 
@@ -62,7 +62,7 @@ The turntable's stylus has advanced technology that will detect when a new song 
 ### Built With
 
 * [![Python][Python.py]][Python-url]
-  * [![Java][Java.java]][Java-url] (Alternative)
+  * [![Java][Java.java]][Java-url] (Application alternative/incomplete example)
 * [![KDS][KDS.aws]][KDS-url]
 * [![KDFS][KDFS.aws]][KDFS-url]
 * [![S3][S3.aws]][S3-url]
