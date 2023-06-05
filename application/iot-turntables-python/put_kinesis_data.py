@@ -13,7 +13,7 @@ from datetime import datetime
 from faker import Faker
 
 STREAM_NAME = "aws-kinesis-iot-turntable-default-stream"
-VINYL_RECORD_FILE = "./vinyl_record_data.json"
+VINYL_RECORD_FILE = "./discogs_vinyl_record_data.json"
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -75,10 +75,10 @@ def get_turntable_users(number_of_users: int) -> list[dict]:
     return mock_users
 
 
-def get_mock_vinyl_data(file_name: str) -> list[dict]:
-    """Get vinyl record data with between 2 and 7 songs"""
+def get_vinyl_record_data(file_name: str) -> list[dict]:
+    """Get vinyl record data from JSON file"""
     results = []
-    with open(file_name) as f:
+    with open(file_name, encoding="utf-8") as f:
         results = json.load(f)
     return results
 
@@ -122,7 +122,7 @@ def put_kinesis_data_record(data: dict, partition_key: str) -> dict:
 def main() -> None:
     user_count, event_count, run_time = get_arguments()
     users = get_turntable_users(user_count)
-    vinyl_records = get_mock_vinyl_data(VINYL_RECORD_FILE)
+    vinyl_records = get_vinyl_record_data(VINYL_RECORD_FILE)
 
     log.info("Generating mock IoT Turntable data...")
     log.info(f"Generating random user data every 5 seconds over {run_time} seconds")
@@ -159,6 +159,7 @@ def main() -> None:
         log.error(f"Encountered {error_count} errors sending data to Kinesis")
 
     log.info(f"Script execution time: {datetime.now() - start_time}")
+
 
 if __name__ == "__main__":
     main()

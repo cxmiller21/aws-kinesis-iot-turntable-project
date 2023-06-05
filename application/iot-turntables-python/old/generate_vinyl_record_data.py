@@ -2,6 +2,10 @@
 Generate Mock Vinyl Records and write to a new JSON file.
 These will be used in the put_kinesis_data.py script to
 persist the pool or records to send to the Kinesis Data Stream.
+
+NOTE:
+I moved this script to the old/ directory because the `get_discogs_vinyl_records.py`
+script is now getting real vinyl records with the Discogs API.
 """
 
 import argparse

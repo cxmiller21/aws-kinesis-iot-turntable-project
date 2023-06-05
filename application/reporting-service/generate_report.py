@@ -27,7 +27,9 @@ def start_reporting_query() -> dict:
     response = client.start_query_execution(
         QueryString=f"SELECT turntableId FROM {GLUE_DATABASE_TABLE} LIMIT 10;",
         QueryExecutionContext={"Database": GLUE_DATABASE},
-        ResultConfiguration={"OutputLocation": f"s3://{ATHENA_S3_REPORTING_BUCKET}/reporting-service/"},
+        ResultConfiguration={
+            "OutputLocation": f"s3://{ATHENA_S3_REPORTING_BUCKET}/reporting-service/"
+        },
     )
     return response
 
@@ -67,8 +69,9 @@ def transform_reporting_data(data: list[dict]):
 
 def lambda_handler(event, context):
     log.info("Generating report...")
-    log.info(f"GLUE_DATABASE: {GLUE_DATABASE} - GLUE_DATABASE_TABLE: {GLUE_DATABASE_TABLE}")
-
+    log.info(
+        f"GLUE_DATABASE: {GLUE_DATABASE} - GLUE_DATABASE_TABLE: {GLUE_DATABASE_TABLE}"
+    )
 
     query_execution = start_reporting_query()
     query_execution_id = query_execution["QueryExecutionId"]
@@ -77,8 +80,8 @@ def lambda_handler(event, context):
     log.info(f"Query Succeeded: {query_succeeded}")
 
     if not query_succeeded:
-      log.error(f"Query failed!: {query_execution}")
-      return {"statusCode": 500, "body": "Report failed!"}
+        log.error(f"Query failed!: {query_execution}")
+        return {"statusCode": 500, "body": "Report failed!"}
 
     raw_data = get_query_results(query_execution_id)
     log.info(f"Raw data: {raw_data}")
