@@ -11,11 +11,8 @@ resource "random_string" "bucket_suffix" {
 locals {
   account_id                    = data.aws_caller_identity.current.account_id
   project_prefix                = "${var.project_name}-${terraform.workspace}"
-  s3_data_lake_bucket_name      = "${local.project_prefix}-data-lake"
-  s3_athena_results_bucket_name = "${local.project_prefix}-athena-query-results"
-  # TODO: Uncomment the following lines to use random bucket names
-  # s3_data_lake_bucket_name      = "${local.project_prefix}-${random_string.bucket_suffix.id}-data-lake"
-  # s3_athena_results_bucket_name = "${local.project_prefix}-${random_string.bucket_suffix.id}-athena-query-results"
+  s3_data_lake_bucket_name      = "${local.project_prefix}-${random_string.bucket_suffix.id}-data-lake"
+  s3_athena_results_bucket_name = "${local.project_prefix}-${random_string.bucket_suffix.id}-athena-query-results"
 }
 
 data "http" "myip" {

@@ -2,8 +2,7 @@ terraform {
   required_version = ">= 1.0"
   backend "s3" {
     bucket = "cm-sdg-terraform-state-bucket"
-    # TODO: Change to "aws/kinesis-iot-turntable/terraform.tfstate"
-    key    = "aws/kinesis-stock"
+    key    = "aws/kinesis-iot-turntable/terraform.tfstate"
     region = "us-east-1"
   }
 
