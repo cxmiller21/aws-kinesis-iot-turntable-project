@@ -3,9 +3,15 @@ variable "aws_region" {
 }
 
 variable "project_name" {
-  type    = string
+  type = string
   # default = "iot-turntable" # TODO: Update resources to this name
   default = "aws-kinesis-iot-turntable"
+}
+
+variable "sns_subscription_emails" {
+  type      = string
+  sensitive = true
+  default   = "" # Update with your email
 }
 
 variable "default_tags" {

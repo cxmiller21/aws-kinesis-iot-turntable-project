@@ -30,7 +30,9 @@ log.info("Getting Vinyl Records from Discogs API...")
 
 OUTPUT_FILE_NAME = "discogs_vinyl_record_data.json"
 
-client = discogs_client.Client("ExampleApplication/0.1")
+# https://www.discogs.com/developers
+# https://github.com/joalla/discogs_client
+client = discogs_client.Client("IotTurntableApp/0.1")
 
 
 def get_arguments() -> tuple[int]:
