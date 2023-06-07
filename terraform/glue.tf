@@ -10,8 +10,7 @@ locals {
 resource "aws_glue_crawler" "iot_turntable_crawler" {
   database_name = aws_glue_catalog_database.iot_turntable_catalog_database.name
   name          = local.glue_crawler_name
-  # TODO: create IAM role here
-  role = "arn:aws:iam::${local.account_id}:role/service-role/AWSGlueServiceRole-tf-import-test"
+  role = aws_iam_role.glue_crawler.arn
 
   table_prefix = ""
 
@@ -173,7 +172,7 @@ resource "aws_glue_catalog_table" "iot_turntable_catalog_table" {
       type       = "string"
     }
     columns {
-      name       = "user_wifi_speed"
+      name       = "user_wifi_mbps"
       parameters = {}
       type       = "int"
     }
@@ -199,4 +198,121 @@ resource "aws_glue_catalog_table" "iot_turntable_catalog_table" {
     }
     */
   }
+}
+
+#####################################################
+# IAM Role and Policy for Glue Crawler
+#####################################################
+data "aws_iam_policy_document" "glue_crawler_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["glue.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+
+data "aws_iam_policy_document" "glue_crawler_permissions" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "glue:*",
+    ]
+    resources = [
+      "arn:aws:glue:${var.aws_region}:${local.account_id}:catalog",
+      "arn:aws:glue:${var.aws_region}:${local.account_id}:database/*", # TODO update
+      "arn:aws:glue:${var.aws_region}:${local.account_id}:table/*"     # TODO update
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "glue:*",
+    ]
+
+    resources = [
+      "arn:aws:glue:${var.aws_region}:${local.account_id}:registry/*",
+      "arn:aws:glue:${var.aws_region}:${local.account_id}:schema/*"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:GetBucketLocation",
+      "s3:ListBucket",
+      "s3:GetObject",
+      "s3:GetBucketAcl",
+      "s3:PutObject",
+    ]
+    resources = [
+      "arn:aws:s3:::${local.s3_data_lake_bucket_name}",
+      "arn:aws:s3:::${local.s3_data_lake_bucket_name}/*"
+    ]
+  }
+
+  # Placeholder for Lambda to transform data
+  statement {
+    effect = "Allow"
+    actions = [
+      "iam:ListRolePolicies",
+      "iam:GetRole",
+      "iam:GetRolePolicy",
+      "cloudwatch:PutMetricData"
+    ]
+    resources = [
+      "*"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+    resources = [
+      "arn:aws:logs:${var.aws_region}:${local.account_id}:log-group:/aws-glue/*",
+    ]
+  }
+}
+
+resource "aws_iam_policy" "glue_crawler" {
+  name        = "${local.glue_crawler_name}-policy"
+  path        = "/"
+  description = "IAM policy for IoT Turntable Glue Crawler"
+  policy      = data.aws_iam_policy_document.glue_crawler_permissions.json
+
+  tags = merge(
+    var.default_tags,
+    {
+      "Name"        = "${local.glue_crawler_name}-policy"
+      "Environment" = terraform.workspace
+    }
+  )
+}
+
+resource "aws_iam_role_policy_attachment" "glue_crawler" {
+  role       = aws_iam_role.glue_crawler.name
+  policy_arn = aws_iam_policy.glue_crawler.arn
+}
+
+resource "aws_iam_role" "glue_crawler" {
+  name               = "${local.glue_crawler_name}-role"
+  assume_role_policy = data.aws_iam_policy_document.glue_crawler_assume_role.json
+
+  tags = merge(
+    var.default_tags,
+    {
+      "Name"        = "${local.glue_crawler_name}-role"
+      "Environment" = terraform.workspace
+    }
+  )
 }

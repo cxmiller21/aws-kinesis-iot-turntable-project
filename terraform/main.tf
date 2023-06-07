@@ -24,7 +24,7 @@ data "http" "myip" {
 #####################################################
 resource "aws_s3_bucket" "iot_turntable_data_lake" {
   bucket        = local.s3_data_lake_bucket_name
-  force_destroy = false
+  force_destroy = true
 
   tags = merge(
     var.default_tags,
@@ -77,7 +77,7 @@ resource "aws_s3_bucket_versioning" "iot_turntable_data_lake" {
 #####################################################
 resource "aws_s3_bucket" "athena_query_results" {
   bucket        = local.s3_athena_results_bucket_name
-  force_destroy = false
+  force_destroy = true
 
   tags = merge(
     var.default_tags,

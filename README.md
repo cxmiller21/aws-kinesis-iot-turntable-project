@@ -37,8 +37,6 @@
     </li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
@@ -95,7 +93,9 @@ This is an example of how to list things you need to use the software and how to
 * Java (Optional) - [Install steps](https://www.java.com/en/download/help/download_options.html)
   * Macs can use `brew install java`
 
-### Installation
+### Getting Started
+
+#### AWS Infrastructure + Data Creation
 
 1. Clone the repo
    ```sh
@@ -116,19 +116,72 @@ This is an example of how to list things you need to use the software and how to
    # Push records to Kinesis Data Stream
    python3 put_kinesis_data.py --user-count 100 --event-count 200
    ```
-4. Verify data is sent to S3 Data Lake
+4. Verify data is sent to S3 Data Lake (~1 minute after running `put_kinesis_data.py` script)
    1. Navigate to S3 Console
    2. Navigate to `s3://<your-bucket-name>/`
    3. Confirm files are uploaded to `s3://<your-bucket-name>/YYYY/MM/DD/HH/file.orc`
 5. Manually run the AWS Glue Crawler to update the Data Catalog
    1. Navigate to AWS Glue Console
    2. Navigate to `Crawlers` in the left menu
-   3. Select `aws-kinesis-iot-turntable-default-crawler`
+   3. Select `iot-turntable-default-crawler`
    4. Select `Run crawler`
    5. Navigate to `Tables` in the left menu
-   6. Select `aws_kinesis_iot_turntable_default_data_lake`
-   7. Select `View data`
+   6. Select `iot_turntable_default_<random-string>_data_lake`
+   7. Select `Actions` dropdown --> `View data`
    8. Confirm data can be queried with AWS Athena
+
+#### Superset Setup (Data Visualization)
+
+1. Prerequisites
+   1. [Docker](https://docs.docker.com/get-docker/)
+   2. [Docker Compose](https://docs.docker.com/compose/install/)
+2. Open a new terminal window outside of the `aws-kinesis-iot-turntable-project` directory
+3. Clone the Apache Superset repo
+   ```sh
+   git clone https://github.com/apache/superset.git
+   ```
+4. Navigate to the `superset` directory with `cd ./superset`
+5. Copy the `superset-py-requirements-local.txt` to the Superset project folder `superset/docker/` and rename the file to `requirements-local.txt`
+  - This will allow us to install the AWS Athena driver for Superset
+6. Pull and run the Superset Docker images
+   ```sh
+   docker-compose -f docker-compose-non-dev.yml pull
+   docker-compose -f docker-compose-non-dev.yml up
+   ```
+7. Navigate to `http://localhost:8088/` in your browser
+8. Login with the default credentials `username:admin` and `password:admin`
+
+##### Superset Athena Database Setup
+
+> From the `aws-kinesis-iot-turntable-project` project
+
+1. Open and update the `get_athena_superset_conn.py` script and update variables
+2. Run the script to get the Athena connection string
+    ```sh
+    python ./scripts/get_athena_superset_conn.py
+    ```
+3. Copy the connection string that's output and update the `<ak_id>` and `<secret_id>` with your AWS credentials that have permissions to access Athena
+3. Navigate to `http://localhost:8088/databaseview/list/` in your browser
+4. Add Database --> Supported Databases --> Athena
+5. Paste the connection string into the `SQLAlchemy URI` field
+6. Test the connection and save the database
+7. Create a new Dataset
+   1. Navigate to `http://localhost:8088/tablemodelview/list/`
+   2. Add Dataset
+      1. Database: Amazon Athena
+      2. Schema: `iot-turntable-default-database`
+      3. Table: `iot_turntable_default_<random-string>_data_lake`
+      4. Create Dataset
+8. Create a chart or test querying data from the SQL Lab
+   1. Navigate to `http://localhost:8088/superset/sqllab/`
+   2.  Database: Amazon Athena
+   3.  Schema: `iot-turntable-default-database`
+   4.  Table: `iot_turntable_default_<random-string>_data_lake`
+   5.  Run Query: `SELECT * FROM "iot-turntable-default-database".iot_turntable_default_cudsg_data_lake LIMIT 10;`
+
+Now you should be seeing data loaded from the IoT Turntable S3 Data Lake in Superset!
+
+Congrats! You've successfully setup the AWS Kinesis IoT Turntable Project!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -146,18 +199,16 @@ Examples TBD
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Create IAM Role for Glue Crawler
+- [x] Create IAM Role for Glue Crawler
 - [ ] Create IAM User/Role/Policy for Superset to access Athena
-- [ ] Update README to include Superset setup
+- [x] Update README to include Superset setup
   - [ ] Can Superset dashboards be added to the repo for easy setup?
 - [ ] Create a DynamoDB table to store vinyl record data generated in `generate_vinyl_record_data.py`
   - [ ] Modify `put_kinesis_data.py` to get records from DynamoDB
 - [ ] Create a DynamoDB table to store a list of users generated in `put_kinesis_data.py`
   - [ ] Create a new script to generate mock users
   - [ ] Modify `put_kinesis_data.py` to get users from DynamoDB
-- [ ] TBD
-
-See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues).
+- [ ] Fix/Expand the Java application to send data to the Kinesis Data Stream
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -176,9 +227,7 @@ Crow Manufacturing - [@crow_manufacturing](https://twitter.com/crow_manufacturin
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
-
-This project was assisted by the following resources:
+The following resources were used to help build out this project:
 
 * [AWS Kinesis Producer - KPL Java Sample Application](https://github.com/awslabs/amazon-kinesis-producer/tree/master/java/amazon-kinesis-producer-sample)
 * [othneildrew Best-README-Template](https://github.com/othneildrew/Best-README-Template)

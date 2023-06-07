@@ -62,6 +62,7 @@ resource "aws_kinesis_firehose_delivery_stream" "iot_turntable_s3_stream" {
     s3_backup_mode      = "Disabled"
 
     buffer_size        = 64
+    buffer_interval    = 60
     compression_format = "UNCOMPRESSED"
 
     cloudwatch_logging_options {

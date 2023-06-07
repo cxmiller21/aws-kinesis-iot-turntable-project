@@ -10,7 +10,7 @@ variable "project_name" {
 variable "sns_subscription_emails" {
   type      = string
   sensitive = true
-  default   = "" # Update with your email
+  default   = "example@example.com" # Update with your email
 }
 
 variable "default_tags" {
@@ -89,8 +89,8 @@ variable "glue_table_columns" {
       comment = ""
       type    = "string"
     },
-    "user_wifi_speed" = {
-      name    = "user_wifi_speed"
+    "user_wifi_mbps" = {
+      name    = "user_wifi_mbps"
       comment = ""
       type    = "string"
     },

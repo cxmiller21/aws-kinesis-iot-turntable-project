@@ -1,0 +1,4 @@
+# Copy this file to ./superset/docker/requirments-local.txt
+PyDynamoDB
+PyAthena==2.25.0
+PyAthenaJDBC==3.0.1

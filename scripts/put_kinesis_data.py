@@ -12,8 +12,8 @@ import random
 from datetime import datetime
 from faker import Faker
 
-STREAM_NAME = "aws-kinesis-iot-turntable-default-stream"
-VINYL_RECORD_FILE = "./discogs_vinyl_record_data.json"
+STREAM_NAME = "iot-turntable-default-stream"
+VINYL_RECORD_FILE = "./json-data/discogs_vinyl_record_data.json"
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -65,7 +65,7 @@ def get_turntable_users(number_of_users: int) -> list[dict]:
             "user_email": fake.ascii_free_email(),
             "user_zip_code": zip_code,
             "user_wifi_name": fake.word(),
-            "user_wifi_mbps": wifi_speeds[fake.random_int(min=0, max=4)],
+            "user_wifi_mbps": random.choice(wifi_speeds),
             "user_ip_address": fake.ipv4(),
             "user_latitude": latitude,
             "user_longitude": longitude,

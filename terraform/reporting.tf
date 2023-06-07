@@ -81,6 +81,7 @@ resource "aws_scheduler_schedule" "reporting_service" {
     mode = "OFF"
   }
 
+  # Run at 5am CST (10 UST) on the first of every month
   schedule_expression          = "cron(0 10 1 * ? *)"
   schedule_expression_timezone = "America/Chicago"
   state                        = "ENABLED"
@@ -106,7 +107,7 @@ resource "aws_scheduler_schedule" "reporting_service" {
 #####################################################
 resource "aws_s3_bucket" "reporting_results" {
   bucket        = local.reporting_s3_bucket_name
-  force_destroy = false
+  force_destroy = true
 
   tags = merge(
     var.default_tags,
@@ -159,7 +160,7 @@ resource "aws_s3_bucket_versioning" "reporting_results" {
 ######################################################
 data "archive_file" "reporting_lambda" {
   type             = "zip"
-  source_file      = "${path.module}/../application/reporting-service/generate_report.py"
+  source_file      = "${path.module}/../lambda/reporting-service/generate_report.py"
   output_file_mode = "0666"
   output_path      = "${path.module}/generate_report.py.zip"
 }

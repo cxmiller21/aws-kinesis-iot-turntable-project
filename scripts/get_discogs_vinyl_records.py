@@ -28,7 +28,7 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 log.info("Getting Vinyl Records from Discogs API...")
 
-OUTPUT_FILE_NAME = "discogs_vinyl_record_data.json"
+OUTPUT_FILE_NAME = "./json-data/discogs_vinyl_record_data.json"
 
 # https://www.discogs.com/developers
 # https://github.com/joalla/discogs_client
