@@ -33,7 +33,7 @@ public class App {
    * Timestamp we'll attach to every record
    */
   private static final String TIMESTAMP = Long.toString(System.currentTimeMillis());
-  private static final String STREAM_NAME = "aws-kinesis-iot-turntable-stream";
+  private static final String STREAM_NAME = "iot-turntable-stream";
 
   public static void main(String[] args) throws InterruptedException {
 

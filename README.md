@@ -110,11 +110,10 @@ This is an example of how to list things you need to use the software and how to
    ```
 3. Push mock events to Kinesis Data Stream
    ```python
-   cd ./application/iot-turntables-python
    # Create limited list of records to use locally
-   python3 generate_vinyl_record_data.py --record-count 20
+   python ./scripts/get_discogs_vinyl_records.py --record-count 20
    # Push records to Kinesis Data Stream
-   python3 put_kinesis_data.py --user-count 100 --event-count 200
+   python ./scripts/put_kinesis_data.py --user-count 100 --event-count 200
    ```
 4. Verify data is sent to S3 Data Lake (~1 minute after running `put_kinesis_data.py` script)
    1. Navigate to S3 Console

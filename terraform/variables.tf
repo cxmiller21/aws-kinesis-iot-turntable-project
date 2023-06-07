@@ -17,7 +17,7 @@ variable "default_tags" {
   type = map(string)
   default = {
     Terraform = "true"
-    Project   = "aws-kinesis-iot-turntable"
+    Project   = "iot-turntable"
   }
 }
 

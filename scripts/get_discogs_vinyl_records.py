@@ -40,8 +40,8 @@ def get_arguments() -> tuple[int]:
     parser = argparse.ArgumentParser(description="Generate Mock User Orders")
     parser.add_argument(
         "--record-count",
-        help="Number of vinyl records to generate data for. Default is 2",
-        default="2",
+        help="Number of vinyl records to generate data for. Default is 20",
+        default="20",
     )
     args = parser.parse_args()
     return int(args.record_count)
