@@ -1,7 +1,6 @@
 locals {
   athena_data_catalog_name = "IoTTurntableDataCatalog"
   named_query_prefix       = "${var.project_name}-reporting"
-  glue_crawler_db_name     = replace("${local.project_prefix}-data-lake", "-", "_")
 }
 
 #####################################################
@@ -36,7 +35,7 @@ resource "aws_athena_named_query" "top_10_mau" {
 
   query = <<EOT
 SELECT turntableId, user_name, COUNT(*) as listen_count
-FROM ${local.glue_crawler_db_name}
+FROM ${local.glue_crawler_table_name}
 GROUP BY turntableId, user_name
 Order by listen_count DESC
 LIMIT 10;
@@ -55,9 +54,9 @@ SELECT
     COUNT(*) AS total_count,
     (COUNT(*) / CAST((
         SELECT COUNT(*)
-        FROM ${local.glue_crawler_db_name}
+        FROM ${local.glue_crawler_table_name}
     ) AS decimal(10,2))) * 100 AS percentage
-FROM ${local.glue_crawler_db_name}
+FROM ${local.glue_crawler_table_name}
 GROUP BY rpm
 LIMIT 10;
 EOT
@@ -73,7 +72,7 @@ resource "aws_athena_named_query" "volume_counts" {
 SELECT
     volume,
     COUNT(volume) AS total_count
-FROM ${local.glue_crawler_db_name}
+FROM ${local.glue_crawler_table_name}
 GROUP BY volume
 ORDER BY total_count desc;
 EOT

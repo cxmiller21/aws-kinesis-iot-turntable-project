@@ -11,9 +11,11 @@ import random
 
 from datetime import datetime
 from faker import Faker
+from pathlib import Path
 
 STREAM_NAME = "iot-turntable-default-stream"
-VINYL_RECORD_FILE = "./json-data/discogs_vinyl_record_data.json"
+SCRIPT_DIR = Path(__file__).resolve().parent
+VINYL_RECORD_FILE = f"{SCRIPT_DIR}/json-data/discogs_vinyl_record_data.json"
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"

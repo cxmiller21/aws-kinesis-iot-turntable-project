@@ -2,6 +2,7 @@ locals {
   glue_database_name = "${local.project_prefix}-database"
   glue_crawler_name  = "${local.project_prefix}-crawler"
   glue_table_name    = replace("${local.project_prefix}-non-crawler-2023", "-", "_")
+  glue_crawler_table_name = replace("${local.s3_data_lake_bucket_name}", "-", "_")
 }
 
 #####################################################

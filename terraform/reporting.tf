@@ -181,7 +181,7 @@ resource "aws_lambda_function" "reporting_lambda" {
       REPORTING_SERVICE_S3_BUCKET     = aws_s3_bucket.reporting_results.id
       REPORTING_SERVICE_SNS_TOPIC_ARN = aws_sns_topic.reporting_service.arn
       GLUE_DATABASE_NAME              = aws_glue_catalog_database.iot_turntable_catalog_database.name
-      GLUE_DATABASE_TABLE             = aws_glue_catalog_table.iot_turntable_catalog_table.name
+      GLUE_DATABASE_TABLE             = local.glue_crawler_table_name
       EVENT_BUS_NAME                  = local.cloudwatch_event_bus_name
     }
   }
@@ -266,6 +266,7 @@ data "aws_iam_policy_document" "reporting_service_lambda" {
       "glue:GetTable",
       "glue:GetTables",
       "glue:GetPartitions",
+      "glue:GetDatabase",
     ]
 
     resources = [

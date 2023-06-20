@@ -66,9 +66,7 @@ REPORTING_SERVICE_S3_BUCKET = os.environ["REPORTING_SERVICE_S3_BUCKET"]
 REPORTING_SERVICE_S3_PREFIX = "monthly-reports"
 REPORTING_SERVICE_SNS_TOPIC_ARN = os.environ["REPORTING_SERVICE_SNS_TOPIC_ARN"]
 GLUE_DATABASE = os.environ["GLUE_DATABASE_NAME"]
-GLUE_DATABASE_TABLE = os.environ["GLUE_DATABASE_TABLE"].replace(
-    "non_crawler_2023", "data_lake"
-)
+GLUE_DATABASE_TABLE = os.environ["GLUE_DATABASE_TABLE"]
 
 
 def handle_next_token(callback_function: callable, filter: str, **kwargs) -> list[dict]:

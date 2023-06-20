@@ -110,7 +110,8 @@ This is an example of how to list things you need to use the software and how to
    ```
 3. Push mock events to Kinesis Data Stream
    ```python
-   # Create limited list of records to use locally
+   # (Optional) Create a limited list of new vinyl records
+   # A file already exists at `./scripts/json-data/discogs_vinyl_record_data.json`
    python ./scripts/get_discogs_vinyl_records.py --record-count 20
    # Push records to Kinesis Data Stream
    python ./scripts/put_kinesis_data.py --user-count 100 --event-count 200
@@ -208,6 +209,7 @@ Examples TBD
   - [ ] Create a new script to generate mock users
   - [ ] Modify `put_kinesis_data.py` to get users from DynamoDB
 - [ ] Fix/Expand the Java application to send data to the Kinesis Data Stream
+- [ ] Create a Lambda function that's triggered when a file is uploaded to the Data Lake to auto-trigger a Glue Crawler
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
