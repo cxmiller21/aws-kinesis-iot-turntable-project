@@ -154,7 +154,7 @@ def main() -> None:
             total_records_sent_to_kinesis += 1
 
     log.info(
-        f"Successfully sent {total_records_sent_to_kinesis} IoT Turntable events to Kinesis!!"
+        f"Successfully sent {total_records_sent_to_kinesis} IoT Turntable events to Kinesis Data Stream: {STREAM_NAME}!!"
     )
 
     if error_count > 0:

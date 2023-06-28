@@ -105,10 +105,10 @@ This is an example of how to list things you need to use the software and how to
    ```sh
    cd ./terraform
    terraform init
-   terraform plan # Confirm resources
-   terraform apply
+   terraform plan # Confirm resources to create
+   terraform apply # Expecting 45 resources to be created
    ```
-3. Push mock events to Kinesis Data Stream
+3. Push mock events to Kinesis Data Stream (Open a new terminal tab/window)
    ```python
    # (Optional) Create a limited list of new vinyl records
    # A file already exists at `./scripts/json-data/discogs_vinyl_record_data.json`
@@ -180,6 +180,17 @@ This is an example of how to list things you need to use the software and how to
    5.  Run Query: `SELECT * FROM "iot-turntable-default-database".iot_turntable_default_cudsg_data_lake LIMIT 10;`
 
 Now you should be seeing data loaded from the IoT Turntable S3 Data Lake in Superset!
+
+### Reporting
+
+Now for the most important part, sending data to the Manufacturing team so they can see how their new product is doing!
+
+1. Access the AWS Console and view the Lambda function page
+2. Open the `iot-turntable-default-reporting-lambda` function
+3. Select `Test` in the top right corner and keep the default settings
+4. Run a new Test event
+   1. The function should complete in about 5 to 10 seconds
+   2. Optionally update the Terraform `sns_subscription_emails` variable to your email address to automatically receive the report. Otherwise view the Presigned S3 URL in the Lambda function results
 
 Congrats! You've successfully setup the AWS Kinesis IoT Turntable Project!
 
